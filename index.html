@@ -442,7 +442,7 @@
                 </div>
                 <div class="balance-display">
                     <div class="balance-label">基金当前总额 (双人相通)</div>
-                    <div class="balance-amount">¥ <span id="totalBalance">0.00</span></div>
+                    <div class="balance-amount">RM <span id="totalBalance">0.00</span></div>
                 </div>
             </div>
 
@@ -489,11 +489,11 @@
                     <div class="summary-row">
                         <div class="summary-block">
                             <div class="summary-label">累计总存入</div>
-                            <div class="summary-value" id="sumDeposit" style="color: var(--success-color);">¥0.00</div>
+                            <div class="summary-value" id="sumDeposit" style="color: var(--success-color);">RM 0.00</div>
                         </div>
                         <div class="summary-block">
                             <div class="summary-label">累计总支出</div>
-                            <div class="summary-value" id="sumExpense" style="color: var(--danger-color);">¥0.00</div>
+                            <div class="summary-value" id="sumExpense" style="color: var(--danger-color);">RM 0.00</div>
                         </div>
                     </div>
                     <div class="panel-title" style="margin-top:20px; font-size:16px;">全历史账目流水明细</div>
@@ -514,9 +514,9 @@
                             <div style="font-size:12px; color:#666; margin-top:5px;" id="reportGenTime"></div>
                         </div>
                         <table style="width:100%; font-size:13px; border-collapse:collapse;">
-                            <tr><td>基金实时总余额：</td><td style="text-align:right; font-weight:bold; color:#1a365d;" id="repBalance">¥0.00</td></tr>
-                            <tr><td>累计存入总计：</td><td style="text-align:right; color:var(--success-color);" id="repIn">¥0.00</td></tr>
-                            <tr><td>累计支出总计：</td><td style="text-align:right; color:var(--danger-color);" id="repOut">¥0.00</td></tr>
+                            <tr><td>基金实时总余额：</td><td style="text-align:right; font-weight:bold; color:#1a365d;" id="repBalance">RM 0.00</td></tr>
+                            <tr><td>累计存入总计：</td><td style="text-align:right; color:var(--success-color);" id="repIn">RM 0.00</td></tr>
+                            <tr><td>累计支出总计：</td><td style="text-align:right; color:var(--danger-color);" id="repOut">RM 0.00</td></tr>
                         </table>
                         <div id="repTableList" style="font-size:11px; margin-top:15px;"></div>
                     </div>
@@ -571,8 +571,8 @@
         // 初始化浏览器端多端共享库
         if (!localStorage.getItem('SGJJ2628_DB')) {
             localStorage.setItem('SGJJ2628_DB', JSON.stringify({
-                balance: 50000.00, // 默认初始示例金额
-                records: [{ id: 1, type: 'deposit', amount: 50000.00, desc: '项目创始双人共享初始化启动基金', user: '系统创建', time: '2026-07-04 12:00:00' }]
+                balance: 0.00, // 修改此行：默认初始金额修改为 0.00
+                records: []    // 修改此行：清空了初始账目动态，由用户后续输入
             }));
         }
 
@@ -656,14 +656,15 @@
                 if(r.type==='deposit') tin+=r.amount; else tout+=r.amount;
                 rSum.appendChild(createItemDOM(r));
             });
-            document.getElementById('sumDeposit').innerText = `¥${tin.toFixed(2)}`;
-            document.getElementById('sumExpense').innerText = `¥${tout.toFixed(2)}`;
+            document.getElementById('sumDeposit').innerText = `RM ${tin.toFixed(2)}`;
+            document.getElementById('sumExpense').innerText = `RM ${tout.toFixed(2)}`;
         }
 
+        // 修改此行：将 +¥ 变更为 +RM
         function createItemDOM(r) {
             const d = document.createElement('div'); d.className = 'record-item';
             d.innerHTML = `<div class="record-meta"><span class="record-desc">${r.desc}</span><span class="record-time">${r.time} <b class="record-user">经办:${r.user}</b></span></div>
-            <div class="${r.type==='deposit'?'amt-deposit':'amt-expense'}">${r.type==='deposit'?'+':'-'}¥${r.amount.toFixed(2)}</div>`;
+            <div class="${r.type==='deposit'?'amt-deposit':'amt-expense'}">${r.type==='deposit'?'+':'-'}RM ${r.amount.toFixed(2)}</div>`;
             return d;
         }
 
@@ -671,18 +672,702 @@
         function prepareReportData() {
             const db = getDB();
             document.getElementById('reportGenTime').innerText = `核算报告生成时间：${new Date().toLocaleString()}`;
-            document.getElementById('repBalance').innerText = `¥${db.balance.toFixed(2)}`;
+            document.getElementById('repBalance').innerText = `RM ${db.balance.toFixed(2)}`;
             let tin = 0, tout = 0, h = '<table style="width:100%; border-collapse:collapse; margin-top:10px;"><tr style="background:#eef5fc; font-weight:bold;"><td style="padding:4px;">明细时间</td><td>人员</td><td>摘要</td><td style="text-align:right;">金额</td></tr>';
             db.records.forEach(r => {
                 if(r.type==='deposit') tin+=r.amount; else tout+=r.amount;
-                h += `<tr style="border-bottom:1px solid #eee; height:28px;"><td>${r.time}</td><td>${r.user}</td><td>${r.desc}</td><td style="text-align:right; font-weight:bold; color:${r.type==='deposit'?'#2ecc71':'#e74c3c'}">${r.type==='deposit'?'+':'-'}¥${r.amount.toFixed(2)}</td></tr>`;
+                h += `<tr style="border-bottom:1px solid #eee; height:28px;"><td>${r.time}</td><td>${r.user}</td><td>${r.desc}</td><td style="text-align:right; font-weight:bold; color:${r.type==='deposit'?'#2ecc71':'#e74c3c'}">${r.type==='deposit'?'+':'-'}RM ${r.amount.toFixed(2)}</td></tr>`;
             });
-            document.getElementById('repIn').innerText = `¥${tin.toFixed(2)}`;
-            document.getElementById('repOut').innerText = `¥${tout.toFixed(2)}`;
+            document.getElementById('repIn').innerText = `RM ${tin.toFixed(2)}`;
+            document.getElementById('repOut').innerText = `RM ${tout.toFixed(2)}`;
+            document.getElementById('repTableList').innerHTML = h + '</table>';
+        }
+    </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project SGJJ2628 - 帅哥基金计划</title>
+    <style>
+        /* 楷体及全局现代化iOS/Android17风格设计 */
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&display=swap');
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: "Kaiti", "STKaiti", "华文楷体", "Noto Serif SC", serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --bg-color: #eef5fc;
+            --primary-color: #4a90e2;
+            --secondary-color: #a5c7f7;
+            --card-bg: rgba(255, 255, 255, 0.75);
+            --text-main: #2c3e50;
+            --text-sub: #7f8c8d;
+            --success-color: #2ecc71;
+            --danger-color: #e74c3c;
+            --radius-lg: 24px;
+            --radius-md: 16px;
+            --shadow: 0 8px 32px 0 rgba(165, 199, 247, 0.3);
+            --blur: blur(20px);
+        }
+
+        body {
+            background: linear-gradient(135deg, #e0efff 0%, #edf4fe 50%, #f5f9ff 100%);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        /* 打印样式优化 (用于完美导出PDF) */
+        @media print {
+            body {
+                background: white !important;
+                color: black !important;
+                padding: 0;
+            }
+            .app-container {
+                box-shadow: none !important;
+                background: white !important;
+                border: none !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                height: auto !important;
+            }
+            .nav-bar, .action-btn, .login-screen, .input-group, button, .header-card {
+                display: none !important;
+            }
+            .screen {
+                display: block !important;
+                opacity: 1 !important;
+                transform: none !important;
+                position: relative !important;
+            }
+            #pdfReportView {
+                border: none !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+            }
+        }
+
+        /* App 容器模拟现代手机/平板界面 */
+        .app-container {
+            width: 100%;
+            max-width: 430px;
+            height: 880px;
+            background: var(--card-bg);
+            backdrop-filter: var(--blur);
+            -webkit-backdrop-filter: var(--blur);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 40px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+            transition: all 0.5s ease;
+        }
+
+        /* 顶部状态与时间栏 */
+        .status-bar {
+            padding: 15px 25px 5px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--primary-color);
+            z-index: 10;
+        }
+
+        /* 屏幕内容区域 */
+        .content-area {
+            flex: 1;
+            position: relative;
+            overflow-y: auto;
+            padding: 20px;
+            padding-bottom: 100px;
+        }
+
+        .content-area::-webkit-scrollbar {
+            width: 0px;
+        }
+
+        .screen {
+            display: none;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+
+        .screen.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* 登录屏幕专用样式 */
+        .login-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(180deg, #e6f2ff 0%, #cee3fc 100%);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 30px;
+            border-radius: 40px;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .login-screen.hide {
+            transform: translateY(-100%);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .brand-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .brand-logo {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 24px;
+            margin: 0 auto 15px auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 8px 20px rgba(74, 144, 226, 0.2);
+            font-size: 32px;
+        }
+
+        .brand-title {
+            font-size: 24px;
+            color: #1a365d;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .brand-subtitle {
+            font-size: 14px;
+            color: var(--text-sub);
+            letter-spacing: 1px;
+        }
+
+        .input-group {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 15px;
+            color: #34495e;
+            padding-left: 5px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 16px 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(74, 144, 226, 0.2);
+            border-radius: var(--radius-md);
+            font-size: 16px;
+            color: var(--text-main);
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .input-field:focus {
+            border-color: var(--primary-color);
+            background: #fff;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, #357abd 100%);
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(74, 144, 226, 0.3);
+            margin-top: 10px;
+        }
+
+        .login-error {
+            color: var(--danger-color);
+            font-size: 14px;
+            margin-top: 12px;
+            height: 20px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        /* 顶部欢迎及大额面板卡片 */
+        .header-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f0f7ff 100%);
+            padding: 25px;
+            border-radius: var(--radius-lg);
+            margin-bottom: 25px;
+            box-shadow: 0 10px 25px rgba(165, 199, 247, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+
+        .user-badge {
+            display: inline-block;
+            background: var(--secondary-color);
+            color: #1a365d;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-left: 5px;
+            font-weight: bold;
+        }
+
+        .balance-display {
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .balance-label {
+            font-size: 16px;
+            color: #5c7596;
+        }
+
+        .balance-amount {
+            font-size: 38px;
+            font-weight: bold;
+            color: #1a365d;
+            margin: 10px 0;
+        }
+
+        /* 磨砂组件容器 */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 24px rgba(149, 157, 165, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .panel-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1a365d;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--primary-color);
+            padding-left: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+
+        .action-btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-deposit { background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%); }
+        .btn-expense { background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); }
+        .btn-neutral { background: linear-gradient(135deg, var(--primary-color) 0%, #2980b9 100%); }
+
+        /* 流水明细列表 */
+        .record-list {
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        .record-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 10px;
+            border-bottom: 1px dashed rgba(0, 0, 0, 0.05);
+            font-size: 14px;
+        }
+
+        .record-meta { display: flex; flex-direction: column; }
+        .record-desc { font-weight: bold; }
+        .record-time { font-size: 11px; color: var(--text-sub); margin-top: 3px; }
+        .record-user { font-size: 11px; background: #eef5fc; padding: 1px 5px; border-radius: 4px; color: var(--primary-color); }
+        .amt-deposit { color: var(--success-color); font-weight: bold; }
+        .amt-expense { color: var(--danger-color); font-weight: bold; }
+
+        /* 每月总结行 */
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            background: rgba(255, 255, 255, 0.5);
+            padding: 12px;
+            border-radius: var(--radius-md);
+        }
+
+        .summary-block { text-align: center; flex: 1; }
+        .summary-block:first-child { border-right: 1px solid rgba(0, 0, 0, 0.05); }
+        .summary-label { font-size: 12px; color: var(--text-sub); }
+        .summary-value { font-size: 18px; font-weight: bold; margin-top: 5px; }
+
+        /* 用户中心 */
+        .avatar {
+            width: 70px;
+            height: 70px;
+            background: var(--secondary-color);
+            border-radius: 50%;
+            margin: 0 auto 15px auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 28px;
+            border: 3px solid white;
+        }
+
+        /* 底部 iOS / Android 17 混合风导航栏 */
+        .nav-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 75px;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255, 255, 255, 0.4);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding-bottom: 10px;
+            z-index: 90;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--text-sub);
+            cursor: pointer;
+            font-size: 12px;
+            width: 16%;
+            text-align: center;
+        }
+
+        .nav-icon { font-size: 20px; margin-bottom: 2px; }
+        .nav-item.active { color: var(--primary-color); font-weight: bold; }
+
+        /* 报表生成视图 */
+        .report-header { text-align: center; padding-bottom: 15px; border-bottom: 2px solid var(--primary-color); margin-bottom: 15px; }
+        .report-title { font-size: 20px; color: #1a365d; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <div class="status-bar">
+            <div id="currentDate">2026/07/04</div>
+            <div id="currentTime">17:00:00</div>
+        </div>
+
+        <div id="loginScreen" class="login-screen">
+            <div class="brand-header">
+                <div class="brand-logo">📊</div>
+                <div class="brand-title">帅哥基金计划</div>
+                <div class="brand-subtitle">Project SGJJ2628 (2026-2028)</div>
+            </div>
+            <div class="input-group">
+                <label>用户名</label>
+                <input type="text" id="username" class="input-field" placeholder="yuxiang / yusen">
+            </div>
+            <div class="input-group">
+                <label>安全 PIN 码</label>
+                <input type="password" id="pin" class="input-field" placeholder="请输入数字 PIN" maxlength="6">
+            </div>
+            <button class="login-btn" onclick="handleLogin()">安全登录</button>
+            <div id="loginError" class="login-error"></div>
+        </div>
+
+        <div class="content-area">
+            
+            <div class="header-card">
+                <div class="welcome-text">
+                    欢迎回来，<span id="displayUser" style="font-weight: bold; color: #1a365d;">管理人</span>
+                    <span class="user-badge">核心联席</span>
+                </div>
+                <div class="balance-display">
+                    <div class="balance-label">基金当前总额 (双人相通)</div>
+                    <div class="balance-amount">RM <span id="totalBalance">0.00</span></div>
+                </div>
+            </div>
+
+            <div id="screen-home" class="screen active">
+                <div class="glass-panel">
+                    <div class="panel-title">最近账目动态</div>
+                    <div class="record-list" id="recentRecordsHome"></div>
+                </div>
+            </div>
+
+            <div id="screen-deposit" class="screen">
+                <div class="glass-panel">
+                    <div class="panel-title">资金存入 (Deposit)</div>
+                    <div class="form-group">
+                        <label>存入金额 (元)</label>
+                        <input type="number" id="depositAmount" class="input-field" placeholder="0.00" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label>款项备注</label>
+                        <input type="text" id="depositDesc" class="input-field" placeholder="如：阶段定投、利息注入">
+                    </div>
+                    <button class="action-btn btn-deposit" onclick="executeTransaction('deposit')">提交存入</button>
+                </div>
+            </div>
+
+            <div id="screen-expense" class="screen">
+                <div class="glass-panel">
+                    <div class="panel-title">资金支出 (Expense)</div>
+                    <div class="form-group">
+                        <label>支出金额 (元)</label>
+                        <input type="number" id="expenseAmount" class="input-field" placeholder="0.00" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label>支出用途</label>
+                        <input type="text" id="expenseDesc" class="input-field" placeholder="如：设备购置、日常开销支出">
+                    </div>
+                    <button class="action-btn btn-expense" onclick="executeTransaction('expense')">提交支出</button>
+                </div>
+            </div>
+
+            <div id="screen-summary" class="screen">
+                <div class="glass-panel">
+                    <div class="panel-title">每月财务总结</div>
+                    <div class="summary-row">
+                        <div class="summary-block">
+                            <div class="summary-label">累计总存入</div>
+                            <div class="summary-value" id="sumDeposit" style="color: var(--success-color);">RM 0.00</div>
+                        </div>
+                        <div class="summary-block">
+                            <div class="summary-label">累计总支出</div>
+                            <div class="summary-value" id="sumExpense" style="color: var(--danger-color);">RM 0.00</div>
+                        </div>
+                    </div>
+                    <div class="panel-title" style="margin-top:20px; font-size:16px;">全历史账目流水明细</div>
+                    <div class="record-list" id="allRecordsSummary"></div>
+                </div>
+            </div>
+
+            <div id="screen-report" class="screen">
+                <div class="glass-panel">
+                    <div class="panel-title">生成并打印报告</div>
+                    <p style="font-size:13px; color:var(--text-sub); margin-bottom:15px; line-height:1.4;">
+                        点击下方按钮将调用系统的打印机引擎。可以直接另存为标准 **PDF 电子报告文件**。
+                    </p>
+                    
+                    <div id="pdfReportView" style="background:#fff; border:1px solid #ddd; padding:15px; border-radius:12px; margin-bottom:15px;">
+                        <div class="report-header">
+                            <div class="report-title">帅哥基金计划2026-2028财务报告</div>
+                            <div style="font-size:12px; color:#666; margin-top:5px;" id="reportGenTime"></div>
+                        </div>
+                        <table style="width:100%; font-size:13px; border-collapse:collapse;">
+                            <tr><td>基金实时总余额：</td><td style="text-align:right; font-weight:bold; color:#1a365d;" id="repBalance">RM 0.00</td></tr>
+                            <tr><td>累计存入总计：</td><td style="text-align:right; color:var(--success-color);" id="repIn">RM 0.00</td></tr>
+                            <tr><td>累计支出总计：</td><td style="text-align:right; color:var(--danger-color);" id="repOut">RM 0.00</td></tr>
+                        </table>
+                        <div id="repTableList" style="font-size:11px; margin-top:15px;"></div>
+                    </div>
+                    <button class="action-btn btn-neutral" onclick="window.print()">执行组件打印 (导出 PDF)</button>
+                </div>
+            </div>
+
+            <div id="screen-user" class="screen">
+                <div class="glass-panel">
+                    <div class="panel-title">用户中心 (连接登录)</div>
+                    <div class="user-profile">
+                        <div class="avatar" id="userAvatar">👤</div>
+                        <h3 id="profileName" style="color:#1a365d;">yuxiang</h3>
+                        <p style="font-size:13px; color:var(--text-sub); margin-bottom:20px;">系统授权管理人</p>
+                        <button class="action-btn btn-expense" onclick="handleLogout()">安全退出登录</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="nav-bar">
+            <div class="nav-item active" onclick="switchScreen('home', this)">
+                <div class="nav-icon">🏠</div><div>主页</div>
+            </div>
+            <div class="nav-item" onclick="switchScreen('deposit', this)">
+                <div class="nav-icon">💰</div><div>存入</div>
+            </div>
+            <div class="nav-item" onclick="switchScreen('expense', this)">
+                <div class="nav-icon">💸</div><div>支出</div>
+            </div>
+            <div class="nav-item" onclick="switchScreen('summary', this)">
+                <div class="nav-icon">📈</div><div>总结</div>
+            </div>
+            <div class="nav-item" onclick="switchScreen('report', this)">
+                <div class="nav-icon">🖨️</div><div>报告</div>
+            </div>
+            <div class="nav-item" onclick="switchScreen('user', this)">
+                <div class="nav-icon">👤</div><div>用户</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 核心配置
+        const USERS = {
+            "yuxiang": { pin: "281300", avatar: "👦" },
+            "yusen": { pin: "160903", avatar: "👨" }
+        };
+        let currentUser = null;
+
+        // 初始化浏览器端多端共享库
+        if (!localStorage.getItem('SGJJ2628_DB')) {
+            localStorage.setItem('SGJJ2628_DB', JSON.stringify({
+                balance: 0.00, // 修改此行：默认初始金额修改为 0.00
+                records: []    // 修改此行：清空了初始账目动态，由用户后续输入
+            }));
+        }
+
+        function getDB() { return JSON.parse(localStorage.getItem('SGJJ2628_DB')); }
+        function saveDB(db) { localStorage.setItem('SGJJ2628_DB', JSON.stringify(db)); updateUI(); }
+
+        // 动态实时时钟
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('currentDate').innerText = `${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')}`;
+            document.getElementById('currentTime').innerText = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+        }
+        setInterval(updateClock, 1000); updateClock();
+
+        // 登录控制
+        function handleLogin() {
+            const u = document.getElementById('username').value.trim();
+            const p = document.getElementById('pin').value.trim();
+            if (USERS[u] && USERS[u].pin === p) {
+                currentUser = u;
+                document.getElementById('loginScreen').classList.add('hide');
+                document.getElementById('displayUser').innerText = currentUser;
+                document.getElementById('profileName').innerText = currentUser;
+                document.getElementById('userAvatar').innerText = USERS[u].avatar;
+                updateUI();
+            } else {
+                document.getElementById('loginError').innerText = "名字或安全PIN密码不正确";
+            }
+        }
+
+        function handleLogout() {
+            currentUser = null;
+            document.getElementById('loginScreen').classList.remove('hide');
+            switchScreen('home', document.querySelector('.nav-bar .nav-item'));
+        }
+
+        // 视图切换
+        function switchScreen(id, el) {
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            if(el) el.classList.add('active');
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(`screen-${id}`).classList.add('active');
+            if(id === 'report') prepareReportData();
+        }
+
+        // 存入支出核心逻辑
+        function executeTransaction(type) {
+            const amtEl = document.getElementById(`${type}Amount`);
+            const descEl = document.getElementById(`${type}Desc`);
+            const val = parseFloat(amtEl.value);
+            const desc = descEl.value.trim() || (type==='deposit'?'无备注存入':'无备注支出');
+
+            if(isNaN(val) || val <= 0) { alert('请输入合法金额'); return; }
+            let db = getDB();
+
+            if(type === 'expense' && db.balance < val) { alert('提示：共享基金池余额不足！'); return; }
+            db.balance = type === 'deposit' ? db.balance + val : db.balance - val;
+
+            const n = new Date();
+            const timeStr = `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')} ${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}:${String(n.getSeconds()).padStart(2,'0')}`;
+            
+            db.records.unshift({ id: Date.now(), type, amount: val, desc, user: currentUser, time: timeStr });
+            saveDB(db);
+
+            amtEl.value = ""; descEl.value = "";
+            alert('账目已同步更新！');
+            switchScreen('home', document.querySelector('.nav-bar .nav-item'));
+        }
+
+        // 更新UI层
+        function updateUI() {
+            const db = getDB();
+            document.getElementById('totalBalance').innerText = db.balance.toLocaleString('zh-CN', {minimumFractionDigits:2});
+            
+            const rHome = document.getElementById('recentRecordsHome'); rHome.innerHTML = "";
+            db.records.slice(0, 5).forEach(r => rHome.appendChild(createItemDOM(r)));
+
+            let tin = 0, tout = 0;
+            const rSum = document.getElementById('allRecordsSummary'); rSum.innerHTML = "";
+            db.records.forEach(r => {
+                if(r.type==='deposit') tin+=r.amount; else tout+=r.amount;
+                rSum.appendChild(createItemDOM(r));
+            });
+            document.getElementById('sumDeposit').innerText = `RM ${tin.toFixed(2)}`;
+            document.getElementById('sumExpense').innerText = `RM ${tout.toFixed(2)}`;
+        }
+
+        // 修改此行：将 +¥ 变更为 +RM
+        function createItemDOM(r) {
+            const d = document.createElement('div'); d.className = 'record-item';
+            d.innerHTML = `<div class="record-meta"><span class="record-desc">${r.desc}</span><span class="record-time">${r.time} <b class="record-user">经办:${r.user}</b></span></div>
+            <div class="${r.type==='deposit'?'amt-deposit':'amt-expense'}">${r.type==='deposit'?'+':'-'}RM ${r.amount.toFixed(2)}</div>`;
+            return d;
+        }
+
+        // 渲染打印表单
+        function prepareReportData() {
+            const db = getDB();
+            document.getElementById('reportGenTime').innerText = `核算报告生成时间：${new Date().toLocaleString()}`;
+            document.getElementById('repBalance').innerText = `RM ${db.balance.toFixed(2)}`;
+            let tin = 0, tout = 0, h = '<table style="width:100%; border-collapse:collapse; margin-top:10px;"><tr style="background:#eef5fc; font-weight:bold;"><td style="padding:4px;">明细时间</td><td>人员</td><td>摘要</td><td style="text-align:right;">金额</td></tr>';
+            db.records.forEach(r => {
+                if(r.type==='deposit') tin+=r.amount; else tout+=r.amount;
+                h += `<tr style="border-bottom:1px solid #eee; height:28px;"><td>${r.time}</td><td>${r.user}</td><td>${r.desc}</td><td style="text-align:right; font-weight:bold; color:${r.type==='deposit'?'#2ecc71':'#e74c3c'}">${r.type==='deposit'?'+':'-'}RM ${r.amount.toFixed(2)}</td></tr>`;
+            });
+            document.getElementById('repIn').innerText = `RM ${tin.toFixed(2)}`;
+            document.getElementById('repOut').innerText = `RM ${tout.toFixed(2)}`;
             document.getElementById('repTableList').innerHTML = h + '</table>';
         }
     </script>
 </body>
 </html>
-
-
